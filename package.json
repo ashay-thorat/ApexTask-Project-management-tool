@@ -1,0 +1,17 @@
+{
+  "name": "apextask",
+  "private": true,
+  "workspaces": ["frontend", "backend"],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm -w frontend run dev",
+    "dev:backend": "npm -w backend run dev",
+    "build": "npm -w frontend run build && npm -w backend run build",
+    "db:migrate": "npm -w backend run db:migrate",
+    "db:push": "npm -w backend run db:push",
+    "db:seed": "npm -w backend run db:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

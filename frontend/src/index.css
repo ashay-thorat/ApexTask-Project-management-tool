@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { @apply border-outline-variant/20; }
+  body {
+    @apply bg-surface-base text-on-surface antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  ::selection { @apply bg-primary/20 text-primary; }
+  :root { color-scheme: dark; }
+  html.light body { @apply bg-light-background text-light-on-background; }
+  html.light ::selection { @apply bg-light-primary/20 text-light-primary; }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-surface-container/70 backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)];
+  }
+  .glass-panel {
+    @apply bg-surface-container/70 backdrop-blur-xl border border-outline-variant/50;
+  }
+  .btn-primary {
+    @apply bg-primary text-on-primary font-label text-label-md px-4 py-2 rounded-lg
+           shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_20px_rgba(192,193,255,0.15)]
+           hover:brightness-110 transition-all duration-200 active:scale-[0.97];
+  }
+  .btn-ghost {
+    @apply text-on-surface-variant hover:text-on-surface hover:bg-white/5
+           transition-colors duration-200 rounded-lg px-3 py-2;
+  }
+  .input-field {
+    @apply bg-transparent border border-outline-variant/50 rounded-lg px-3 py-2
+           text-on-surface placeholder:text-on-surface-variant/40
+           focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(192,193,255,0.15)]
+           transition-all duration-200;
+  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-surface-container-highest rounded-full hover:bg-outline-variant; }
