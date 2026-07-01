@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import BoardView from './BoardView';
+import { BoardView } from './BoardView';
 
 // Mock the react-router-dom hooks
 vi.mock('react-router-dom', () => ({
