@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { config } from "../utils/config";
 
-const resend = new Resend(config.resendApiKey);
+const resend = config.resendApiKey ? new Resend(config.resendApiKey) : null;
 
 export class EmailService {
   async sendTaskAssignmentEmail(
@@ -16,7 +16,7 @@ export class EmailService {
     }
 
     try {
-      await resend.emails.send({
+      await resend?.emails.send({
         from: "ApexTask <notifications@apextask.dev>",
         to: userEmail,
         subject: `New Task Assigned: ${taskTitle}`,
