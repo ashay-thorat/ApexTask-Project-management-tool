@@ -35,10 +35,10 @@ Clone the repository and install all the necessary dependencies. The project use
 
 ```bash
 # Clone the repository
-git clone https://github.com/Ashay1111-at/Codsoft-ApexTask--Project-management-tool.git
+git clone https://github.com/ashay-thorat/ApexTask-Project-management-tool.git
 
 # Navigate into the project folder
-cd "Codsoft-ApexTask--Project-management-tool/apextask"
+cd ApexTask-Project-management-tool
 
 # Install all dependencies for both Frontend and Backend
 npm install
@@ -65,7 +65,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 ```
 
 ### 4️⃣ Database Setup
-Once your `DATABASE_URL` is set up in the backend `.env`, run the following commands from the `apextask` root directory to initialize the database:
+Once your `DATABASE_URL` is set up in the backend `.env`, run the following commands from the root directory to initialize the database:
 
 ```bash
 # Push the database schema to Neon PostgreSQL
@@ -75,8 +75,8 @@ npm run db:push
 npm run db:seed
 ```
 
-### 5️⃣ Run the Application
-Start both the Frontend and Backend servers simultaneously with one command from the `apextask` root directory:
+### 5️⃣ Run the Application Locally
+Start both the Frontend and Backend servers simultaneously with one command from the root directory:
 
 ```bash
 npm run dev
@@ -84,6 +84,27 @@ npm run dev
 
 * 🌐 **Frontend URL:** `http://localhost:5173`
 * 🔌 **Backend API:** `http://localhost:4000`
+
+---
+
+## ☁️ Deployment
+
+You can deploy the frontend to Vercel and the backend to Render easily.
+
+### Deploying Frontend to Vercel
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard) -> **Add New** -> **Project**.
+2. Import your GitHub repository.
+3. Under **Configure Project**, set the **Root Directory** to `frontend`.
+4. Add all environment variables from your `frontend/.env` file.
+5. Click **Deploy**.
+
+### Deploying Backend to Render
+1. Go to [Render Dashboard](https://dashboard.render.com/) -> **New** -> **Blueprint**.
+2. Connect your GitHub repository. Render will detect the `render.yaml` file in the `backend/` folder.
+3. Make sure the Root Directory is set to `backend` if asked.
+4. Once the Web Service is created, navigate to its **Environment** tab and add the environment variables from your `backend/.env` file (`DATABASE_URL`, `JWT_SECRET`, Firebase variables).
+5. Click **Save Changes** to deploy the API.
+6. *(Important)* Copy your live Render URL and update your Vercel frontend environment variables to point to this new API URL.
 
 ---
 
