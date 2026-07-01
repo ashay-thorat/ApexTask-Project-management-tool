@@ -1,6 +1,7 @@
 import { prisma } from "../utils/prisma";
 import { badRequest, notFound, forbidden } from "../utils/errors";
-import { WorkspaceRole, ProjectStatus, ProjectPriority } from "@prisma/client";
+type ProjectStatus = "PLANNING" | "ACTIVE" | "PAUSED" | "COMPLETED";
+type ProjectPriority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 
 export class ProjectService {
   async create(data: {

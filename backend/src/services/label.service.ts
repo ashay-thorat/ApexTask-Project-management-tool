@@ -1,6 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { badRequest, notFound, forbidden } from "../utils/errors";
-import { WorkspaceRole } from "@prisma/client";
+
 
 export class LabelService {
   async create(workspaceId: string, name: string, color: string, userId: string) {

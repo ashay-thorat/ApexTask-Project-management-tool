@@ -27,7 +27,7 @@ export class AnalyticsService {
       }),
     ]);
 
-    const doneCount = tasksByStatus.find(s => s.status === "DONE")?._count ?? 0;
+    const doneCount = tasksByStatus.find((s: any) => s.status === "DONE")?._count ?? 0;
     const completionRate = totalTasks > 0 ? Math.round((doneCount / totalTasks) * 100) : 0;
 
     const memberWorkload = await prisma.taskAssignee.groupBy({
@@ -60,19 +60,19 @@ export class AnalyticsService {
 
     const statusDist = Object.fromEntries(
       ["BACKLOG", "TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"].map(s => [
-        s, tasks.filter(t => t.status === s).length,
+        s, tasks.filter((t: any) => t.status === s).length,
       ])
     );
 
     const priorityDist = Object.fromEntries(
       ["NONE", "LOW", "MEDIUM", "HIGH", "URGENT"].map(p => [
-        p, tasks.filter(t => t.priority === p).length,
+        p, tasks.filter((t: any) => t.priority === p).length,
       ])
     );
 
-    const overdue = tasks.filter(t => t.dueDate && t.dueDate < new Date() && t.status !== "DONE");
+    const overdue = tasks.filter((t: any) => t.dueDate && t.dueDate < new Date() && t.status !== "DONE");
     const avgCycleTime = tasks.length > 0
-      ? tasks.reduce((sum, t) => sum + (t.updatedAt.getTime() - t.createdAt.getTime()), 0) / tasks.length
+      ? tasks.reduce((sum: number, t: any) => sum + (t.updatedAt.getTime() - t.createdAt.getTime()), 0) / tasks.length
       : 0;
 
     return {

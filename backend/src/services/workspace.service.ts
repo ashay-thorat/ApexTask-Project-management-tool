@@ -1,6 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { badRequest, forbidden, notFound } from "../utils/errors";
-import { WorkspaceRole } from "@prisma/client";
+type WorkspaceRoleType = "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
 
 export class WorkspaceService {
   async create(name: string, ownerId: string) {
@@ -14,7 +14,7 @@ export class WorkspaceService {
         slug,
         ownerId,
         members: {
-          create: { userId: ownerId, role: WorkspaceRole.OWNER },
+          create: { userId: ownerId, role: "OWNER" },
         },
       },
       include: { members: { include: { user: true } } },
@@ -40,18 +40,18 @@ export class WorkspaceService {
       },
     });
     if (!workspace) throw notFound("Workspace not found");
-    const membership = workspace.members.find(m => m.userId === userId);
+    const membership = workspace.members.find((m: any) => m.userId === userId);
     if (!membership) throw forbidden("Not a member of this workspace");
     return workspace;
   }
 
   async update(workspaceId: string, userId: string, data: { name?: string; logoUrl?: string }) {
-    await this.checkRole(workspaceId, userId, [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]);
+    await this.checkRole(workspaceId, userId, ["OWNER", "ADMIN"]);
     return prisma.workspace.update({ where: { id: workspaceId }, data });
   }
 
-  async addMember(workspaceId: string, userId: string, email: string, role: WorkspaceRole = WorkspaceRole.MEMBER) {
-    await this.checkRole(workspaceId, userId, [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]);
+  async addMember(workspaceId: string, userId: string, email: string, role: WorkspaceRoleType = "MEMBER") {
+    await this.checkRole(workspaceId, userId, ["OWNER", "ADMIN"]);
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) throw notFound("User not found with that email");
     const existing = await prisma.workspaceMember.findUnique({
@@ -65,14 +65,14 @@ export class WorkspaceService {
   }
 
   async removeMember(workspaceId: string, requesterId: string, memberId: string) {
-    await this.checkRole(workspaceId, requesterId, [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]);
+    await this.checkRole(workspaceId, requesterId, ["OWNER", "ADMIN"]);
     return prisma.workspaceMember.delete({
       where: { userId_workspaceId: { userId: memberId, workspaceId } },
     });
   }
 
-  async updateMemberRole(workspaceId: string, requesterId: string, memberId: string, role: WorkspaceRole) {
-    await this.checkRole(workspaceId, requesterId, [WorkspaceRole.OWNER, WorkspaceRole.ADMIN]);
+  async updateMemberRole(workspaceId: string, requesterId: string, memberId: string, role: WorkspaceRoleType) {
+    await this.checkRole(workspaceId, requesterId, ["OWNER", "ADMIN"]);
     return prisma.workspaceMember.update({
       where: { userId_workspaceId: { userId: memberId, workspaceId } },
       data: { role },
@@ -80,7 +80,7 @@ export class WorkspaceService {
     });
   }
 
-  private async checkRole(workspaceId: string, userId: string, allowedRoles: WorkspaceRole[]) {
+  private async checkRole(workspaceId: string, userId: string, allowedRoles: WorkspaceRoleType[]) {
     const member = await prisma.workspaceMember.findUnique({
       where: { userId_workspaceId: { userId, workspaceId } },
     });

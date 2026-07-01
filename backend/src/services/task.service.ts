@@ -1,6 +1,7 @@
 import { prisma } from "../utils/prisma";
 import { badRequest, notFound, forbidden } from "../utils/errors";
-import { TaskStatus, TaskPriority } from "@prisma/client";
+type TaskStatus = "BACKLOG" | "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
+type TaskPriority = "NONE" | "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 import { emailService } from "./email.service";
 
 interface CreateTaskData {
@@ -114,7 +115,7 @@ export class TaskService {
 
     // Get old assignees to find newly added ones
     const oldAssignees = await prisma.taskAssignee.findMany({ where: { taskId } });
-    const oldUserIds = new Set(oldAssignees.map((a) => a.userId));
+    const oldUserIds = new Set(oldAssignees.map((a: any) => a.userId));
 
     await prisma.taskAssignee.deleteMany({ where: { taskId } });
     if (assigneeIds.length > 0) {
@@ -128,10 +129,10 @@ export class TaskService {
     const assignerName = assigner?.name || assigner?.email || "Someone";
 
     // Create notifications for newly added assignees (not for the person doing the assigning)
-    const newAssigneeIds = assigneeIds.filter((id) => !oldUserIds.has(id) && id !== userId);
+    const newAssigneeIds = assigneeIds.filter((id: string) => !oldUserIds.has(id) && id !== userId);
     if (newAssigneeIds.length > 0) {
       await prisma.notification.createMany({
-        data: newAssigneeIds.map((assigneeId) => ({
+        data: newAssigneeIds.map((assigneeId: string) => ({
           userId: assigneeId,
           type: "TASK_ASSIGNED",
           title: "Task assigned to you",
@@ -170,10 +171,10 @@ export class TaskService {
     // Notify all assignees of the task about the new comment (except the commenter)
     const commenter = await prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } });
     const commenterName = commenter?.name || commenter?.email || "Someone";
-    const notifyUserIds = task.assignees.map((a) => a.userId).filter((id) => id !== userId);
+    const notifyUserIds = task.assignees.map((a: any) => a.userId).filter((id: string) => id !== userId);
     if (notifyUserIds.length > 0) {
       await prisma.notification.createMany({
-        data: notifyUserIds.map((assigneeId) => ({
+        data: notifyUserIds.map((assigneeId: string) => ({
           userId: assigneeId,
           type: "TASK_COMMENTED",
           title: "New comment on your task",
