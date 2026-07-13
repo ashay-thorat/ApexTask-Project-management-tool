@@ -5,7 +5,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { AppShell } from "@/components/layout/AppShell";
 import { BoardView } from "@/components/views/BoardView";
 import { ListView } from "@/components/views/ListView";
-import { AnalyticsView } from "@/components/views/AnalyticsView";
+import { DashboardView } from "@/components/views/DashboardView";
 import { TimelineView } from "@/components/views/TimelineView";
 import { CalendarView } from "@/components/views/CalendarView";
 import { AuthPage } from "@/pages/AuthPage";
@@ -64,9 +64,9 @@ function ListPage() {
   return <ListView tasks={tasks} />;
 }
 
-function AnalyticsPage() {
+function DashboardPage() {
   const { tasks } = useWorkspaceStore();
-  return <AnalyticsView tasks={tasks} />;
+  return <DashboardView tasks={tasks} />;
 }
 
 function TimelinePage() {
@@ -93,10 +93,10 @@ const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { path: "/", element: <BoardPage /> },
+          { path: "/", element: <DashboardPage /> },
+          { path: "/board", element: <BoardPage /> },
           { path: "/list", element: <ListPage /> },
           { path: "/my-tasks", element: <MyTasksPage /> },
-          { path: "/analytics", element: <AnalyticsPage /> },
           { path: "/timeline", element: <TimelinePage /> },
           { path: "/calendar", element: <CalendarPage /> },
           { path: "/profile", element: <ProfilePage /> },

@@ -11,9 +11,13 @@ interface WorkspaceState {
   tasks: Task[];
   labels: Label[];
   isLoading: boolean;
+  isCommandPaletteOpen: boolean;
+  isCreateTaskModalOpen: boolean;
 
   currentUserRole: WorkspaceRole | null;
 
+  setCommandPaletteOpen: (open: boolean) => void;
+  setCreateTaskModalOpen: (open: boolean) => void;
   initialize: () => Promise<void>;
   fetchWorkspaces: () => Promise<void>;
   setCurrentWorkspace: (ws: Workspace) => Promise<void>;
@@ -22,10 +26,15 @@ interface WorkspaceState {
   fetchTasks: (projectId: string) => Promise<void>;
   fetchLabels: (workspaceId: string) => Promise<void>;
   createWorkspace: (name: string) => Promise<Workspace>;
+  updateWorkspace: (name: string) => Promise<void>;
   createProject: (data: Partial<Project> & { workspaceId: string }) => Promise<void>;
+  updateProject: (projectId: string, data: Partial<Project>) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
   createTask: (data: Partial<Task> & { projectId: string }) => Promise<void>;
   updateTask: (taskId: string, data: Partial<Task>) => Promise<void>;
+  deleteTask: (taskId: string) => Promise<void>;
   assignTask: (taskId: string, assigneeIds: string[]) => Promise<void>;
+  updateTaskLabels: (taskId: string, labelIds: string[]) => Promise<void>;
   reorderTasks: (projectId: string, tasks: { id: string; status: string; sortOrder: number }[]) => Promise<void>;
   addMember: (email: string, role?: WorkspaceRole) => Promise<void>;
   removeMember: (memberId: string) => Promise<void>;
@@ -41,7 +50,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   tasks: [],
   labels: [],
   isLoading: false,
+  isCommandPaletteOpen: false,
+  isCreateTaskModalOpen: false,
   currentUserRole: null,
+
+  setCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
+  setCreateTaskModalOpen: (open) => set({ isCreateTaskModalOpen: open }),
 
   initialize: async () => {
     set({ isLoading: true });
@@ -115,9 +129,36 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     return data;
   },
 
+  updateWorkspace: async (name) => {
+    const { currentWorkspace } = get();
+    if (!currentWorkspace) return;
+    const { data } = await api.patch(`/workspaces/${currentWorkspace.id}`, { name });
+    set((s) => ({
+      currentWorkspace: { ...s.currentWorkspace, ...data },
+      workspaces: s.workspaces.map((w) => w.id === currentWorkspace.id ? { ...w, ...data } : w)
+    }));
+  },
+
   createProject: async (projectData) => {
     const { data } = await api.post("/projects", projectData);
     set((s) => ({ projects: [data, ...s.projects] }));
+    get().setCurrentProject(data);
+  },
+
+  updateProject: async (projectId, projectData) => {
+    const { data } = await api.patch(`/projects/${projectId}`, projectData);
+    set((s) => ({
+      projects: s.projects.map((p) => p.id === projectId ? { ...p, ...data } : p),
+      currentProject: s.currentProject?.id === projectId ? { ...s.currentProject, ...data } : s.currentProject
+    }));
+  },
+
+  deleteProject: async (projectId) => {
+    await api.delete(`/projects/${projectId}`);
+    set((s) => ({
+      projects: s.projects.filter((p) => p.id !== projectId),
+      currentProject: s.currentProject?.id === projectId ? null : s.currentProject
+    }));
   },
 
   createTask: async (taskData) => {
@@ -143,13 +184,26 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
 
   assignTask: async (taskId, assigneeIds) => {
     const { data } = await api.post(`/tasks/${taskId}/assign`, { assigneeIds });
-    if (data) {
-      set((s) => ({
-        tasks: s.tasks.map((t) => (t.id === taskId ? { ...t, assignees: data.assignees } : t)),
-      }));
+    const { tasks } = get();
+    const update = tasks.find((t) => t.id === taskId);
+    if (update) {
+      set({ tasks: tasks.map((t) => (t.id === taskId ? { ...t, assignees: data.assignees } : t)) });
     }
   },
 
+  updateTaskLabels: async (taskId, labelIds) => {
+    const { data } = await api.post(`/tasks/${taskId}/labels`, { labelIds });
+    const { tasks } = get();
+    const update = tasks.find((t) => t.id === taskId);
+    if (update) {
+      set({ tasks: tasks.map((t) => (t.id === taskId ? { ...t, labels: data.labels } : t)) });
+    }
+  },
+
+  deleteTask: async (taskId) => {
+    await api.delete(`/tasks/${taskId}`);
+    set((s) => ({ tasks: s.tasks.filter((t) => t.id !== taskId) }));
+  },
 
   reorderTasks: async (projectId, tasks) => {
     set((s) => ({

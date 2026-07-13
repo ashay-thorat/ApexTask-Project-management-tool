@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, MessageSquare, History, Send, UserPlus, UserMinus, ChevronDown } from "lucide-react";
+import { X, MessageSquare, History, Send, UserPlus, UserMinus, ChevronDown, Trash2 } from "lucide-react";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useAuthStore } from "@/stores/auth";
 import { cn, formatDate } from "@/lib/utils";
@@ -29,7 +29,7 @@ const priorityOptions = [
 ];
 
 export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
-  const { tasks, updateTask, assignTask, currentWorkspace, currentUserRole } = useWorkspaceStore();
+  const { tasks, updateTask, assignTask, currentWorkspace, currentUserRole, deleteTask, labels, updateTaskLabels } = useWorkspaceStore();
   const { user } = useAuthStore();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
@@ -38,6 +38,9 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
   const [showAssigneePicker, setShowAssigneePicker] = useState(false);
   const [assigningIds, setAssigningIds] = useState<string[]>([]);
   const [savingAssignees, setSavingAssignees] = useState(false);
+  
+  const [showLabelPicker, setShowLabelPicker] = useState(false);
+  const [assigningLabels, setAssigningLabels] = useState<string[]>([]);
 
   const task = tasks.find((t) => t.id === taskId);
   const members = currentWorkspace?.members || [];
@@ -52,8 +55,9 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
   useEffect(() => {
     if (task) {
       setAssigningIds(task.assignees?.map((a) => a.userId) || []);
+      setAssigningLabels(task.labels?.map((l) => l.labelId) || []);
     }
-  }, [task?.id]);
+  }, [task?.id, task?.labels]);
 
   if (!task) return null;
 
@@ -63,6 +67,40 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
       toast.success(`Moved to ${statusOptions.find(s => s.value === status)?.label}`);
     } catch {
       toast.error("Failed to update status");
+    }
+  };
+
+  const handleDueDateChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      await updateTask(task.id, { dueDate: e.target.value || undefined });
+      toast.success("Due date updated");
+    } catch {
+      toast.error("Failed to update due date");
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) return;
+    try {
+      await deleteTask(task.id);
+      toast.success("Task deleted");
+      onClose();
+    } catch {
+      toast.error("Failed to delete task");
+    }
+  };
+
+  const handleToggleLabel = (labelId: string) => {
+    setAssigningLabels((prev) => prev.includes(labelId) ? prev.filter((id) => id !== labelId) : [...prev, labelId]);
+  };
+
+  const handleSaveLabels = async () => {
+    try {
+      await updateTaskLabels(task.id, assigningLabels);
+      toast.success("Labels updated");
+      setShowLabelPicker(false);
+    } catch {
+      toast.error("Failed to update labels");
     }
   };
 
@@ -127,9 +165,15 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
             </div>
             <h2 className="text-body-lg text-on-surface font-semibold leading-snug">{task.title}</h2>
           </div>
-          <button onClick={onClose} className="btn-ghost p-1.5 text-on-surface-variant hover:text-on-surface shrink-0 ml-4">
-            <X size={18} />
-          </button>
+          <div className="flex items-center shrink-0 ml-4">
+            <button onClick={handleDeleteTask} className="btn-ghost p-1.5 text-on-surface-variant hover:text-error transition-colors" title="Delete Task">
+              <Trash2 size={16} />
+            </button>
+            <div className="w-px h-4 bg-outline-variant/30 mx-1.5" />
+            <button onClick={onClose} className="btn-ghost p-1.5 text-on-surface-variant hover:text-on-surface">
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-lg space-y-5">
@@ -279,19 +323,25 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
 
           {/* Due date */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-surface-container/50 rounded-xl p-3 border border-outline-variant/20">
+            <div className="bg-surface-container/50 rounded-xl p-3 border border-outline-variant/20 relative">
               <p className="text-[10px] font-label text-on-surface-variant mb-1">Due Date</p>
-              <p className={cn(
-                "text-sm",
-                task.dueDate && new Date(task.dueDate) < new Date() && task.status !== "DONE"
-                  ? "text-error font-medium"
-                  : "text-on-surface"
-              )}>
-                {task.dueDate ? formatDate(task.dueDate) : "—"}
-              </p>
+              <input
+                type="date"
+                value={task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : ""}
+                onChange={handleDueDateChange}
+                className="bg-transparent text-sm text-on-surface focus:outline-none focus:text-primary transition-colors cursor-pointer w-full [color-scheme:dark]"
+              />
             </div>
-            <div className="bg-surface-container/50 rounded-xl p-3 border border-outline-variant/20">
-              <p className="text-[10px] font-label text-on-surface-variant mb-1">Labels</p>
+            
+            <div className="bg-surface-container/50 rounded-xl p-3 border border-outline-variant/20 relative">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[10px] font-label text-on-surface-variant">Labels</p>
+                {isAdmin && (
+                  <button onClick={() => setShowLabelPicker(!showLabelPicker)} className="text-[10px] text-primary hover:underline">
+                    {showLabelPicker ? "Cancel" : "Edit"}
+                  </button>
+                )}
+              </div>
               <div className="flex flex-wrap gap-1">
                 {task.labels?.length > 0 ? task.labels.map((tl) => (
                   <span key={tl.id} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant border border-outline-variant/20">
@@ -299,6 +349,24 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
                   </span>
                 )) : <span className="text-sm text-on-surface-variant/50">—</span>}
               </div>
+
+              {showLabelPicker && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-surface-container/95 backdrop-blur-md rounded-xl border border-outline-variant/30 p-3 space-y-2 z-10 shadow-xl">
+                  <div className="space-y-1 max-h-[150px] overflow-y-auto">
+                    {labels.map((l) => {
+                      const selected = assigningLabels.includes(l.id);
+                      return (
+                        <label key={l.id} className={cn("flex items-center gap-2 p-1.5 rounded-md cursor-pointer transition-colors", selected ? "bg-primary/10" : "hover:bg-surface-container-high")}>
+                          <input type="checkbox" checked={selected} onChange={() => handleToggleLabel(l.id)} className="accent-primary" />
+                          <span className="text-xs text-on-surface">{l.name}</span>
+                        </label>
+                      );
+                    })}
+                    {labels.length === 0 && <p className="text-xs text-on-surface-variant/50">No labels in workspace</p>}
+                  </div>
+                  <button onClick={handleSaveLabels} className="btn-primary w-full text-xs py-1.5">Save Labels</button>
+                </div>
+              )}
             </div>
           </div>
 

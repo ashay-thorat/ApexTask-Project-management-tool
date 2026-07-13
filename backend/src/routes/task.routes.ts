@@ -72,4 +72,18 @@ router.get("/:id/activity", async (req: Request, res: Response, next: NextFuncti
   } catch (e) { next(e); }
 });
 
+router.post("/:id/labels", validate(z.object({ labelIds: z.array(z.string()) })), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const task = await taskService.updateLabels(req.params.id as string, req.user!.userId, req.body.labelIds);
+    res.json(task);
+  } catch (e) { next(e); }
+});
+
+router.delete("/:id", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await taskService.delete(req.params.id as string, req.user!.userId);
+    res.json({ success: true });
+  } catch (e) { next(e); }
+});
+
 export default router;

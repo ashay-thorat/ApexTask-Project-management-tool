@@ -16,25 +16,24 @@
 
 @layer components {
   .glass-card {
-    @apply bg-surface-container/70 backdrop-blur-xl border border-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)];
+    @apply bg-surface-container border border-outline-variant transition-all duration-[150ms] ease-fast;
   }
   .glass-panel {
-    @apply bg-surface-container/70 backdrop-blur-xl border border-outline-variant/50;
+    @apply bg-surface-container-high border border-outline-variant/80 shadow-md;
   }
   .btn-primary {
     @apply bg-primary text-on-primary font-label text-label-md px-4 py-2 rounded-lg
-           shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_20px_rgba(192,193,255,0.15)]
-           hover:brightness-110 transition-all duration-200 active:scale-[0.97];
+           hover:brightness-110 transition-all duration-[150ms] ease-fast active:scale-[0.98];
   }
   .btn-ghost {
-    @apply text-on-surface-variant hover:text-on-surface hover:bg-white/5
-           transition-colors duration-200 rounded-lg px-3 py-2;
+    @apply text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high
+           transition-colors duration-[150ms] ease-fast rounded-lg px-3 py-2;
   }
   .input-field {
-    @apply bg-transparent border border-outline-variant/50 rounded-lg px-3 py-2
+    @apply bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2
            text-on-surface placeholder:text-on-surface-variant/40
-           focus:outline-none focus:border-primary focus:shadow-[0_0_0_2px_rgba(192,193,255,0.15)]
-           transition-all duration-200;
+           focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary
+           transition-all duration-[150ms] ease-fast;
   }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

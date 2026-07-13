@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { BoardView } from './BoardView';
+import type { Task } from '@/types';
 
 // Mock the react-router-dom hooks
 vi.mock('react-router-dom', () => ({
@@ -24,20 +25,25 @@ vi.mock('@tanstack/react-query', () => ({
 }));
 
 describe('BoardView Component', () => {
+  const mockTasks: Task[] = [
+    { id: '1', title: 'Task 1', status: 'TODO', priority: 'HIGH', sortOrder: 1, projectId: 'test-project', createdAt: new Date(), updatedAt: new Date(), position: 1 },
+    { id: '2', title: 'Task 2', status: 'IN_PROGRESS', priority: 'LOW', sortOrder: 2, projectId: 'test-project', createdAt: new Date(), updatedAt: new Date(), position: 2 },
+  ];
+  const mockOnReorder = vi.fn();
+
   it('renders all Kanban columns correctly', () => {
-    render(<BoardView />);
+    render(<BoardView tasks={mockTasks} projectId="test-project" onReorder={mockOnReorder} />);
     
     expect(screen.getByText('Backlog')).toBeInTheDocument();
-    expect(screen.getByText('To Do')).toBeInTheDocument();
+    expect(screen.getByText('Todo')).toBeInTheDocument();
     expect(screen.getByText('In Progress')).toBeInTheDocument();
     expect(screen.getByText('In Review')).toBeInTheDocument();
     expect(screen.getByText('Done')).toBeInTheDocument();
   });
 
   it('renders tasks in the correct columns', () => {
-    render(<BoardView />);
+    render(<BoardView tasks={mockTasks} projectId="test-project" onReorder={mockOnReorder} />);
     
-    // We expect "Task 1" and "Task 2" to be rendered somewhere in the board based on the mock data.
     expect(screen.getByText('Task 1')).toBeInTheDocument();
     expect(screen.getByText('Task 2')).toBeInTheDocument();
   });

@@ -211,6 +211,41 @@ export class TaskService {
     });
   }
 
+  async updateLabels(taskId: string, userId: string, labelIds: string[]) {
+    const task = await prisma.task.findUnique({ where: { id: taskId }, include: { project: true } });
+    if (!task) throw notFound("Task not found");
+    await this.requireAccess(task.project.workspaceId, userId);
+
+    await prisma.taskLabel.deleteMany({ where: { taskId } });
+    if (labelIds.length > 0) {
+      await prisma.taskLabel.createMany({
+        data: labelIds.map(id => ({ taskId, labelId: id })),
+      });
+    }
+
+    await this.logActivity(taskId, userId, "updated", "labels", "", labelIds.join(","));
+    return prisma.task.findUnique({ where: { id: taskId }, include: { labels: { include: { label: true } } } });
+  }
+
+  async delete(taskId: string, userId: string) {
+    const task = await prisma.task.findUnique({ where: { id: taskId }, include: { project: true } });
+    if (!task) throw notFound("Task not found");
+    await this.requireAccess(task.project.workspaceId, userId);
+
+    // Prisma might cascade delete, but if not we should delete related entities first
+    await prisma.comment.deleteMany({ where: { taskId } });
+    await prisma.activityLog.deleteMany({ where: { taskId } });
+    await prisma.taskAssignee.deleteMany({ where: { taskId } });
+    await prisma.taskLabel.deleteMany({ where: { taskId } });
+    await prisma.notification.deleteMany({ where: { taskId } });
+    
+    // Delete subtasks as well (assuming 1 level deep for simplicity)
+    await prisma.task.deleteMany({ where: { parentId: taskId } });
+
+    await prisma.task.delete({ where: { id: taskId } });
+    return { success: true };
+  }
+
   private async logActivity(taskId: string, userId: string, action: string, field: string | null, oldValue?: string | null, newValue?: string | null) {
     return prisma.activityLog.create({
       data: { taskId, userId, action, field, oldValue, newValue },

@@ -14,11 +14,11 @@ const COLORS = {
   surface: "#273647",
 };
 
-interface AnalyticsViewProps {
+interface DashboardViewProps {
   tasks: Task[];
 }
 
-export function AnalyticsView({ tasks }: AnalyticsViewProps) {
+export function DashboardView({ tasks }: DashboardViewProps) {
   const statusData = useMemo(() => {
     const counts: Record<string, number> = { BACKLOG: 0, TODO: 0, IN_PROGRESS: 0, IN_REVIEW: 0, DONE: 0 };
     tasks.forEach((t) => { counts[t.status]++; });
@@ -60,7 +60,7 @@ export function AnalyticsView({ tasks }: AnalyticsViewProps) {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-on-surface">Analytics</h2>
+            <h2 className="text-xl font-semibold text-on-surface">Dashboard</h2>
             <p className="text-sm text-on-surface-variant">Workspace performance and team velocity metrics.</p>
           </div>
           <div className="flex gap-2">

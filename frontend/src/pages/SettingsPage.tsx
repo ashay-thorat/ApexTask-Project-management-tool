@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/auth";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import type { WorkspaceRole } from "@/types";
-import { UserPlus, Shield, Trash2, Plus } from "lucide-react";
+import { UserPlus, Shield, Trash2, Plus, Pencil, Check, X } from "lucide-react";
 
 const roleColors: Record<string, string> = {
   OWNER: "bg-tertiary/20 text-tertiary border-tertiary/30",
@@ -14,13 +14,19 @@ const roleColors: Record<string, string> = {
 };
 
 export function SettingsPage() {
-  const { currentWorkspace, currentUserRole, addMember, removeMember, updateMemberRole, projects, tasks, createProject } = useWorkspaceStore();
+  const { currentWorkspace, currentUserRole, addMember, removeMember, updateMemberRole, projects, tasks, createProject, updateWorkspace, updateProject, deleteProject } = useWorkspaceStore();
   const { user } = useAuthStore();
   const [email, setEmail] = useState("");
   const [adding, setAdding] = useState(false);
   const [showNewProject, setShowNewProject] = useState(false);
   const [newProjectTitle, setNewProjectTitle] = useState("");
   const [creatingProject, setCreatingProject] = useState(false);
+
+  const [isEditingWorkspace, setIsEditingWorkspace] = useState(false);
+  const [editWorkspaceName, setEditWorkspaceName] = useState("");
+  
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
+  const [editProjectTitle, setEditProjectTitle] = useState("");
 
   const isAdmin = currentUserRole === "OWNER" || currentUserRole === "ADMIN";
   const members = currentWorkspace?.members || [];
@@ -76,14 +82,79 @@ export function SettingsPage() {
     }
   };
 
+  const handleUpdateWorkspace = async () => {
+    if (!editWorkspaceName.trim() || editWorkspaceName === currentWorkspace?.name) {
+      setIsEditingWorkspace(false);
+      return;
+    }
+    try {
+      await updateWorkspace(editWorkspaceName.trim());
+      toast.success("Workspace updated");
+      setIsEditingWorkspace(false);
+    } catch {
+      toast.error("Failed to update workspace");
+    }
+  };
+
+  const handleUpdateProject = async (projectId: string) => {
+    if (!editProjectTitle.trim()) {
+      setEditingProjectId(null);
+      return;
+    }
+    try {
+      await updateProject(projectId, { title: editProjectTitle.trim() });
+      toast.success("Project updated");
+      setEditingProjectId(null);
+    } catch {
+      toast.error("Failed to update project");
+    }
+  };
+
+  const handleDeleteProject = async (projectId: string, projectTitle: string) => {
+    if (!confirm(`Are you sure you want to delete the project "${projectTitle}"? All tasks inside will be permanently deleted.`)) return;
+    try {
+      await deleteProject(projectId);
+      toast.success("Project deleted");
+    } catch {
+      toast.error("Failed to delete project");
+    }
+  };
+
   return (
     <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6 max-w-3xl">
       <h1 className="text-headline-md text-on-surface">Settings</h1>
 
       <div className="glass-panel rounded-2xl p-lg space-y-md">
-        <h3 className="text-body-lg text-on-surface font-semibold flex items-center gap-2">
-          <Shield size={18} /> Workspace — {currentWorkspace?.name || "Loading..."}
-        </h3>
+        <div className="flex items-center justify-between">
+          {isEditingWorkspace ? (
+            <div className="flex items-center gap-2 flex-1 max-w-sm">
+              <input 
+                autoFocus
+                className="input-field flex-1 text-sm py-1" 
+                value={editWorkspaceName}
+                onChange={(e) => setEditWorkspaceName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleUpdateWorkspace();
+                  if (e.key === "Escape") setIsEditingWorkspace(false);
+                }}
+              />
+              <button onClick={handleUpdateWorkspace} className="p-1.5 bg-primary/20 text-primary rounded hover:bg-primary/30"><Check size={14}/></button>
+              <button onClick={() => setIsEditingWorkspace(false)} className="p-1.5 bg-error/20 text-error rounded hover:bg-error/30"><X size={14}/></button>
+            </div>
+          ) : (
+            <h3 className="text-body-lg text-on-surface font-semibold flex items-center gap-2">
+              <Shield size={18} /> Workspace — {currentWorkspace?.name || "Loading..."}
+              {isAdmin && (
+                <button onClick={() => {
+                  setEditWorkspaceName(currentWorkspace?.name || "");
+                  setIsEditingWorkspace(true);
+                }} className="ml-2 p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-md">
+                  <Pencil size={14} />
+                </button>
+              )}
+            </h3>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="bg-surface-container/50 rounded-xl p-3 border border-outline-variant/20">
@@ -150,10 +221,44 @@ export function SettingsPage() {
             <p className="text-sm text-on-surface-variant/60 py-4 text-center">No projects yet</p>
           )}
           {projects.map((p) => (
-            <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-outline-variant/20">
-              <div>
-                <p className="text-sm text-on-surface font-medium">{p.title}</p>
-                <p className="text-[11px] text-on-surface-variant">{p.status}</p>
+            <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-surface-container/50 border border-outline-variant/20 group">
+              <div className="flex-1">
+                {editingProjectId === p.id ? (
+                  <div className="flex items-center gap-2 max-w-sm">
+                    <input 
+                      autoFocus
+                      className="input-field text-sm py-1 flex-1"
+                      value={editProjectTitle}
+                      onChange={(e) => setEditProjectTitle(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleUpdateProject(p.id);
+                        if (e.key === "Escape") setEditingProjectId(null);
+                      }}
+                    />
+                    <button onClick={() => handleUpdateProject(p.id)} className="p-1 bg-primary/20 text-primary rounded"><Check size={14}/></button>
+                    <button onClick={() => setEditingProjectId(null)} className="p-1 bg-error/20 text-error rounded"><X size={14}/></button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm text-on-surface font-medium">{p.title}</p>
+                      {isAdmin && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                          <button onClick={() => {
+                            setEditProjectTitle(p.title);
+                            setEditingProjectId(p.id);
+                          }} className="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-md">
+                            <Pencil size={12} />
+                          </button>
+                          <button onClick={() => handleDeleteProject(p.id, p.title)} className="p-1 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-md">
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-on-surface-variant">{p.status}</p>
+                  </>
+                )}
               </div>
               <span className={cn(
                 "text-[10px] font-label px-2 py-0.5 rounded-full border",
