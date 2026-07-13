@@ -55,7 +55,7 @@ export function TaskDetailModal({ taskId, onClose }: TaskDetailModalProps) {
   useEffect(() => {
     if (task) {
       setAssigningIds(task.assignees?.map((a) => a.userId) || []);
-      setAssigningLabels(task.labels?.map((l) => l.labelId) || []);
+      setAssigningLabels(task.labels?.map((l) => l.label.id) || []);
     }
   }, [task?.id, task?.labels]);
 
