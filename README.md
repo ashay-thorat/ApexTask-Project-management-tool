@@ -1,4 +1,4 @@
-# 🚀 ApexTask - Project Management Tool
+# 🚀 ApexTask - Project Management Tool 
 
 Welcome to **ApexTask**, a modern, full-stack Kanban-style Project Management application designed for teams! This project features a beautiful React frontend, a robust Node.js backend, and uses Neon PostgreSQL for the database and Firebase for Authentication.
 
