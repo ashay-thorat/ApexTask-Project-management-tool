@@ -1,114 +1,125 @@
-# 🚀 ApexTask - Project Management Tool 
+# ApexTask 🚀
 
-Welcome to **ApexTask**, a modern, full-stack Kanban-style Project Management application designed for teams! This project features a beautiful React frontend, a robust Node.js backend, and uses Neon PostgreSQL for the database and Firebase for Authentication.
-
----
+ApexTask is a sleek, modern, dark-themed Project Management tool built for high-performance teams. It features a stunning, animated user interface and robust backend functionality that allows teams to manage workspaces, projects, and tasks with ease.
 
 ## ✨ Features
-* 🔐 **Authentication:** Secure Email/Password & Google Sign-In powered by Firebase.
-* 📋 **Kanban Board:** Smooth drag-and-drop task management with real-time optimistic UI updates.
-* 🎨 **Modern Design:** Beautiful UI with a sleek Dark/Light mode toggle.
-* 👥 **Workspaces & Collaboration:** Organize projects by workspaces and assign tasks to teammates.
-* 🔔 **Real-Time Notifications:** Stay updated on task assignments and project changes.
 
----
+- **Premium Dark UI:** Designed with a carefully crafted, dark-first color palette (`zinc-950` base, `violet-blue` accents), clean typography (Inter), and smooth micro-animations using Framer Motion.
+- **Global Command Palette (Cmd+K):** A centralized, lightning-fast overlay for quick navigation across the app, switching projects, and executing actions like creating tasks.
+- **Workspace & Project Management:** Create, rename, delete, and switch between multiple isolated workspaces and projects.
+- **Kanban Board:** Drag-and-drop tasks across fully customizable columns (Backlog, Todo, In Progress, In Review, Done).
+- **Comprehensive Task Management:** Create tasks, assign team members, set due dates with a native picker, apply labels, manage priorities, and track activity and comments.
+- **Role-Based Access Control (RBAC):** Invite members to your workspace and assign roles (Owner, Admin, Member, Viewer).
+- **Responsive Layout:** Dynamic collapsible sidebar, persistent topbar with search, and an intuitive dashboard landing page.
 
-## 🛠️ Tech Stack
-* **Frontend:** React, Vite, TypeScript, Tailwind CSS, Zustand (State Management), Hello Pangea DND (Drag & Drop).
-* **Backend:** Node.js, Express, TypeScript, Prisma ORM.
-* **Database:** Neon Serverless PostgreSQL.
-* **Authentication:** Firebase Auth.
+## 🛠️ Technology Stack
+
+**Frontend:**
+- [React 18](https://react.dev/) with [Vite](https://vitejs.dev/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS v3](https://tailwindcss.com/) (Custom Design System)
+- [Zustand](https://zustand-demo.pmnd.rs/) (Global State Management)
+- [Framer Motion](https://www.framer.com/motion/) (Animations)
+- [React Router v6](https://reactrouter.com/) (Routing)
+- [Lucide React](https://lucide.dev/) (Icons)
+
+**Backend:**
+- [Node.js](https://nodejs.org/) & [Express](https://expressjs.com/)
+- [Prisma ORM](https://www.prisma.io/)
+- [Neon Serverless PostgreSQL](https://neon.tech/)
+- JSON Web Tokens (JWT) for Authentication
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these instructions to get the project up and running on your local machine.
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-### 1️⃣ Prerequisites
-Make sure you have installed:
-* [Node.js](https://nodejs.org/) (v18 or higher)
-* [Git](https://git-scm.com/)
+### Prerequisites
 
-### 2️⃣ Installation
-Clone the repository and install all the necessary dependencies. The project uses npm Workspaces, so you only need to run the install command once from the root directory!
+- Node.js (v18 or higher recommended)
+- A [Neon Postgres](https://neon.tech/) database (or any PostgreSQL instance)
+
+### 1. Clone the repository
 
 ```bash
-# Clone the repository
 git clone https://github.com/ashay-thorat/ApexTask-Project-management-tool.git
-
-# Navigate into the project folder
 cd ApexTask-Project-management-tool
+```
 
-# Install all dependencies for both Frontend and Backend
+### 2. Backend Setup
+
+Open a terminal and navigate to the backend directory:
+
+```bash
+cd backend
+```
+
+Install dependencies:
+```bash
 npm install
 ```
 
-### 3️⃣ Environment Setup
-You will need to set up environment variables for both the backend and frontend.
-
-**Backend Setup:**
-1. Navigate to the backend folder: `cd backend`
-2. Copy the example environment file: `cp .env.example .env` (or manually copy the contents of `.env.example` into a new `.env` file).
-3. Fill in your `DATABASE_URL` (from Neon) and your Firebase service account details.
-
-**Frontend Setup:**
-1. Navigate to the frontend folder: `cd ../frontend`
-2. Create a `.env` file and add your Firebase client configuration keys:
+Create a `.env` file in the `backend` directory with the following variables:
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+PORT=4000
+DATABASE_URL="postgresql://neondb_owner:password@ep-withered-surf-pooler.c-8.us-east-1.aws.neon.tech/neondb?sslmode=require"
+JWT_SECRET="your_super_secret_jwt_string_here"
+JWT_REFRESH_SECRET="your_refresh_secret"
+JWT_EXPIRES_IN="15m"
+JWT_REFRESH_EXPIRES_IN="7d"
+FRONTEND_URL="http://localhost:5173"
 ```
 
-### 4️⃣ Database Setup
-Once your `DATABASE_URL` is set up in the backend `.env`, run the following commands from the root directory to initialize the database:
-
+Sync your database schema using Prisma:
 ```bash
-# Push the database schema to Neon PostgreSQL
-npm run db:push
-
-# Seed the database with sample data (optional but recommended!)
-npm run db:seed
+npx prisma db push
 ```
 
-### 5️⃣ Run the Application Locally
-Start both the Frontend and Backend servers simultaneously with one command from the root directory:
-
+Start the backend development server:
 ```bash
 npm run dev
 ```
+*The backend will run on `http://localhost:4000`.*
 
-* 🌐 **Frontend URL:** `http://localhost:5173`
-* 🔌 **Backend API:** `http://localhost:4000`
+### 3. Frontend Setup
+
+Open a new terminal window and navigate to the frontend directory:
+
+```bash
+cd frontend
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Create a `.env` file in the `frontend` directory:
+```env
+VITE_API_URL=http://localhost:4000/api
+```
+
+Start the frontend development server:
+```bash
+npm run dev
+```
+*The frontend will be available at `http://localhost:5173` (or the port specified by Vite).*
 
 ---
 
-## ☁️ Deployment
+## 📸 Usage
 
-You can deploy the frontend to Vercel and the backend to Render easily.
+1. Open `http://localhost:5173` in your browser.
+2. Register a new account.
+3. Create your first Workspace and Project.
+4. Press `Cmd+K` (or `Ctrl+K`) to open the Command Palette.
+5. Start creating and moving tasks!
 
-### Deploying Frontend to Vercel
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard) -> **Add New** -> **Project**.
-2. Import your GitHub repository.
-3. Under **Configure Project**, set the **Root Directory** to `frontend`.
-4. Add all environment variables from your `frontend/.env` file.
-5. Click **Deploy**.
+## 🤝 Contributing
 
-### Deploying Backend to Render
-1. Go to [Render Dashboard](https://dashboard.render.com/) -> **New** -> **Blueprint**.
-2. Connect your GitHub repository. Render will detect the `render.yaml` file in the `backend/` folder.
-3. Make sure the Root Directory is set to `backend` if asked.
-4. Once the Web Service is created, navigate to its **Environment** tab and add the environment variables from your `backend/.env` file (`DATABASE_URL`, `JWT_SECRET`, Firebase variables).
-5. Click **Save Changes** to deploy the API.
-6. *(Important)* Copy your live Render URL and update your Vercel frontend environment variables to point to this new API URL.
+Contributions are welcome! Feel free to open an issue or submit a pull request for improvements and bug fixes.
 
----
+## 📝 License
 
-## 👨‍💻 Admin Access (Seed Data)
-If you ran the `npm run db:seed` command, an admin account with sample data (workspaces, projects, and tasks) was created for you! You can log into it by clicking **Continue with Google** using the admin email you set up during the seed process.
-
-Happy coding! 🎉
+This project is licensed under the MIT License.
